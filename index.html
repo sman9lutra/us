@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portal Ujian Digital - SMA 9 Luwu Utara</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Animated Gradient Background */
+        .bg-animated {
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #1e3a8a);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .exam-card-active {
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exam-card-active::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%);
+            transform: skewX(-25deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+
+            100% {
+                left: 200%;
+            }
+        }
+
+        .pulse-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            animation: pulsate 2s infinite ease-out;
+            border: 2px solid #4ade80;
+            opacity: 0;
+        }
+
+        @keyframes pulsate {
+            0% {
+                transform: scale(0.8);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="bg-animated min-h-screen pb-12 text-slate-800 antialiased relative selection:bg-indigo-500 selection:text-white">
+
+    <!-- Decorative background blobs -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div
+            class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-40 animate-blob">
+        </div>
+        <div
+            class="absolute top-[20%] right-[-10%] w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-40 animate-blob animation-delay-2000">
+        </div>
+        <div
+            class="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-40 animate-blob animation-delay-4000">
+        </div>
+    </div>
+
+    <!-- Mobile Header -->
+    <header class="glass-panel sticky top-0 z-50">
+        <div class="max-w-md mx-auto px-5 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div
+                    class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg ring-2 ring-white/20">
+                    9
+                </div>
+                <div>
+                    <h1 id="display-day" class="font-bold text-white text-base leading-tight tracking-wide">Memuat...
+                    </h1>
+                    <p class="text-[11px] text-indigo-300 font-semibold tracking-wider uppercase mt-0.5">SMA 9 Luwu
+                        Utara</p>
+                </div>
+            </div>
+            <div class="flex flex-col items-end">
+                <div id="live-clock"
+                    class="font-mono font-bold text-white text-base bg-white/10 px-4 py-1.5 rounded-xl border border-white/20 backdrop-blur-md shadow-inner">
+                    00:00:00
+                </div>
+                <div id="sync-status"
+                    class="text-[9px] mt-1.5 font-bold uppercase tracking-widest transition-all duration-300">
+                    <!-- Status Sinkronisasi -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto px-5 pt-8 relative z-10">
+
+        <!-- Sesi Aktif Section -->
+        <section id="status-container" class="mb-10">
+            <div id="active-exam-info" class="hidden animate-fade-in-up">
+                <div
+                    class="bg-white/10 backdrop-blur-md border border-white/20 rounded-[28px] p-6 shadow-2xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl -mr-16 -mt-16">
+                    </div>
+
+                    <div class="flex items-center gap-3 mb-6 relative z-10">
+                        <div class="relative w-4 h-4 flex items-center justify-center">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span
+                                class="relative inline-flex rounded-full h-3 w-3 bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></span>
+                        </div>
+                        <h2 class="font-bold text-white text-lg uppercase tracking-widest">Sesi Aktif</h2>
+                    </div>
+
+                    <div id="exam-buttons-container" class="space-y-4 relative z-10">
+                        <!-- Tombol Link Google Form muncul di sini lewat JS -->
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-white/10 flex justify-center items-center relative z-10">
+                        <div class="bg-white/10 px-4 py-2 rounded-full border border-white/10">
+                            <p id="current-time-range" class="text-indigo-200 text-xs font-semibold tracking-wide">
+                                Berakhir pukul 00:00 WITA
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jika Tidak Ada Ujian -->
+            <div id="no-exam-info"
+                class="glass-card rounded-[28px] p-10 text-center relative overflow-hidden animate-fade-in">
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-slate-100 rounded-full blur-3xl"></div>
+
+                <div
+                    class="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-400 shadow-inner group relative">
+                    <div
+                        class="absolute inset-0 bg-blue-500/10 rounded-3xl scale-0 group-hover:scale-100 transition-transform duration-500">
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 relative z-10" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">Belum Ada Sesi</h3>
+                <p class="text-slate-500 text-sm leading-relaxed font-medium">Santai dulu! Link akan muncul otomatis
+                    menyesuaikan jadwal server pusat.</p>
+            </div>
+        </section>
+
+        <!-- Jadwal Section -->
+        <section class="glass-card rounded-[28px] p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-lg">Jadwal Hari Ini</h3>
+                </div>
+                <span id="date-label"
+                    class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1.5 rounded-full ring-1 ring-indigo-100">WITA</span>
+            </div>
+
+            <div id="schedule-list" class="space-y-3">
+                <!-- Daftar jadwal hari ini muncul di sini -->
+            </div>
+        </section>
+
+        <!-- Panduan Keamanan -->
+        <div
+            class="glass-card rounded-[28px] p-6 bg-gradient-to-br from-amber-50 to-orange-50/50 border-amber-100/50 relative overflow-hidden">
+            <div
+                class="absolute top-0 right-0 w-32 h-32 bg-amber-200/20 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none">
+            </div>
+
+            <h4 class="text-sm font-bold text-amber-800 uppercase mb-4 flex items-center gap-2 tracking-wide">
+                <div class="w-7 h-7 bg-amber-200/50 rounded-full flex items-center justify-center text-amber-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M2.166 15.833L10 1.666l7.833 14.167H2.166zM10 13a1 1 0 100-2 1 1 0 000 2zm1-4a1 1 0 10-2 0v2a1 1 0 102 0V9z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                Info Penting
+            </h4>
+            <ul class="text-xs text-amber-700/80 space-y-3 font-medium">
+                <li class="flex items-start gap-2">
+                    <span class="mt-0.5 w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                    <span>Waktu dipantau secara otomatis oleh server pusat.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="mt-0.5 w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                    <span>Mengubah jam di HP <strong class="text-amber-900">tidak akan mempercepat</strong> kemunculan
+                        link.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="mt-0.5 w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                    <span>Pastikan koneksi internet stabil agar sinkronisasi lancar.</span>
+                </li>
+            </ul>
+        </div>
+
+        <footer class="mt-12 text-center relative z-10 pb-4">
+            <div
+                class="inline-flex items-center justify-center p-1 rounded-full bg-white/5 backdrop-blur-sm border border-white/10">
+                <p class="text-indigo-200/80 text-[10px] font-semibold tracking-widest uppercase px-4 py-2">
+                    Panitia Ujian Sekolah SMA 9 Luwu Utara &copy; 2026
+                </p>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // Data Jadwal (Format menggunakan Tanggal YYYY-MM-DD)
+        // const masterSchedule = {
+        //     "2026-04-02": [ // Senin (Contoh Tanggal)
+        //         { start: "07:30", end: "09:00", subject: "Bahasa Indonesia", category: "UMUM", link: "https://forms.gle/senin1" },
+        //         { start: "09:30", end: "11:00", subject: "Fisika", category: "XII-IPA", link: "https://forms.gle/senin2a" },
+        //         { start: "09:30", end: "11:00", subject: "Ekonomi", category: "XII-IPS", link: "https://forms.gle/senin2b" }
+        //     ],
+        //     "2026-04-07": [ // Selasa 
+        //         { start: "07:30", end: "09:00", subject: "Matematika", category: "UMUM", link: "https://forms.gle/selasa1" },
+        //         { start: "09:30", end: "11:00", subject: "Biologi", category: "XII-IPA", link: "https://forms.gle/selasa2a" },
+        //         { start: "09:30", end: "11:00", subject: "Sosiologi", category: "XII-IPS", link: "https://forms.gle/selasa2b" }
+        //     ],
+        //     "2026-04-08": [ // Rabu
+        //         { start: "07:30", end: "09:00", subject: "Bahasa Inggris", category: "UMUM", link: "https://forms.gle/rabu1" },
+        //         { start: "09:30", end: "11:00", subject: "Kimia", category: "XII-IPA", link: "https://forms.gle/rabu2a" },
+        //         { start: "09:30", end: "11:00", subject: "Geografi", category: "XII-IPS", link: "https://forms.gle/rabu2b" }
+        //     ],
+        //     "2026-04-09": [ // Kamis
+        //         { start: "07:30", end: "09:00", subject: "Pendidikan Agama", category: "UMUM", link: "https://forms.gle/kamis1" },
+        //         { start: "09:30", end: "11:00", subject: "Sejarah Indonesia", category: "UMUM", link: "https://forms.gle/kamis2" }
+        //     ],
+        //     "2026-04-10": [ // Jumat
+        //         { start: "07:30", end: "09:00", subject: "PPKn", category: "UMUM", link: "https://forms.gle/jumat1" }
+        //     ],
+        //     "2026-04-11": [ // Sabtu
+        //         { start: "07:30", end: "09:00", subject: "Seni Budaya", category: "UMUM", link: "https://forms.gle/sabtu1" }
+        //     ],
+        //     "2026-04-13": [ // Senin (Minggu ke-2)
+        //         { start: "07:30", end: "09:00", subject: "Lintas Minat", category: "UMUM", link: "https://forms.gle/senin2_1" }
+        //     ],
+        //     "2026-04-14": [ // Selasa (Minggu ke-2)
+        //         { start: "07:30", end: "09:00", subject: "Muatan Lokal", category: "UMUM", link: "https://forms.gle/selasa2_1" }
+        //     ]
+        // };
+        const masterSchedule = {
+
+            "2026-04-06": [ // Senin
+                { start: "08:00", end: "09:30", subject: "Pendidikan Agama Islam", category: "Umum", link: "https://docs.google.com/forms/d/e/1FAIpQLSer6nOn8bTy4cBgRIPzXi1Ae40WS5vx9j7l_ljeCCDfqZ46Q/viewform?usp=publish-editor" },
+                { start: "08:00", end: "09:30", subject: "Pendidikan Agama Hindu", category: "Umum", link: "https://bit.ly/SoalUS_PAH2026" },
+                { start: "08:00", end: "09:30", subject: "Pendidikan Agama Kristen", category: "Umum", link: "https://docs.google.com/forms/d/e/1FAIpQLSdrPGBuA9XrnonvLqp_lihq6lfHuaxQebOdknFJT_ydRZXz2g/viewform?usp=sharing&ouid=108583679233766223415" },
+                { start: "10:00", end: "11:30", subject: "PKWU", category: "Umum", link: "https://docs.google.com/forms/d/e/1FAIpQLSfbXMKMe3n7QBUtK_JU6x_QD6eZexfgYdOz04XmlZxYZf0qQg/viewform?usp=dialog" }
+            ],
+            "2026-04-07": [ // Selasa
+                { start: "08:00", end: "09:30", subject: "PKN", category: "Umum", link: "https://forms.gle/UcVgdXz9FgyJcGqc9" },
+                { start: "10:00", end: "11:30", subject: "Seni Budaya", category: "Umum", link: "https://docs.google.com/forms/d/e/1FAIpQLSfCzmYh24EFSc3WEIPqik8wr4Sqxa3wkIHafTRJHD5d84hqMA/viewform?usp=publish-editor" }
+            ],
+            "2026-04-08": [ // Rabu
+                { start: "08:00", end: "09:30", subject: "Matematika (XII.1, XII.2, XII.3)", category: "Umum", link: "https://forms.gle/xVYSt1rqtJ7Xmb1i9" },
+                { start: "08:00", end: "09:30", subject: "Matematika (XII.4)", category: "Umum", link: "https://forms.gle/8bRCfLjvUAQUdwx66" },
+                { start: "10:00", end: "11:30", subject: "PJOK", category: "Umum", link: "https://docs.google.com/forms/d/e/1FAIpQLSfdxCtpDQ1WrC4cAxRdTwWa-XXgvxBvrCAocvHi_iM0yMQ1hA/viewform?usp=publish-editor" }
+            ],
+            "2026-04-09": [ // Kamis
+                { start: "08:00", end: "09:30", subject: "Bahasa Indonesia", category: "Umum", link: "https://docs.google.com/forms/d/e/1FAIpQLSdEZo3-GauYGWuVDgEPbDqgC3qkS5X4sjNkZ08C7_OcyiJeA/viewform?usp=publish-editor" },
+                { start: "10:00", end: "11:30", subject: "Sejarah", category: "Umum", link: "https://forms.gle/qgwHhJ8FbWSvKdwB9" }
+            ],
+            "2026-04-10": [ // Jumat
+                { start: "08:00", end: "09:30", subject: "Bahasa Inggris", category: "Umum", link: "https://forms.gle/VquAD7W9bNuvCzxX9" },
+
+            ],
+            "2026-04-13": [ // Senin
+                { start: "08:00", end: "09:30", subject: "Kimia TK.L", category: "Mapil", link: "https://forms.gle/qxmjNNY9x7T9YBMK9" },
+                { start: "08:00", end: "09:30", subject: "Geografi TK.L", category: "Mapil", link: "https://docs.google.com/forms/d/e/1FAIpQLSeoBoB_SuWx84NCzhJvp_5a75DN55FetZ8gKECAlmKhez60kg/viewform?uspdialog=" },
+                { start: "10:00", end: "11:30", subject: "Biologi TK.L", category: "Mapil", link: "https://docs.google.com/forms/d/e/1FAIpQLSfH9TilleQLID6q-zaEZ6t4RPzhzFYRKkIIL9yyCDdLEBk_Pw/viewform?usp=sharing&ouid=104481748537125131214" },
+                { start: "10:00", end: "11:30", subject: "Ekonomi TK.L", category: "Mapil", link: "https://wa.me/6285242160999" }
+            ],
+            "2026-04-14": [ // Selasa
+                { start: "08:00", end: "09:30", subject: "Ekonomi TK.L", category: "Mapil", link: "" },
+                { start: "08:00", end: "09:30", subject: "Bahasa Inggris TK.L", category: "Mapil", link: "https://wa.me/6285242160999" },
+                { start: "08:00", end: "09:30", subject: "Sosiologi TK.L", category: "Mapil", link: "https://docs.google.com/forms/d/e/1FAIpQLSd8vl7xOMQG7vGQo5UXTpyfNMKFiz8Owf6FtAjMUAOuL6ut0A/viewform?usp=dialog" },
+                { start: "10:00", end: "11:30", subject: "Fisika TK.L / Informatika TK.L", category: "Mapil", link: "https://docs.google.com/forms/d/e/1FAIpQLSfO2wAs1UplSRPq0rWDHkfPCMVDxawdwHLg3uYgwW5wtHbfXg/viewform?usp=header" },
+                { start: "10:00", end: "11:30", subject: "Sejarah TK.L", category: "Mapil", link: "https://forms.gle/HdqYBY9XW9jYLv6a9" }
+            ]
+        }
+
+
+        // Logic (Tidak Diubah)
+        let serverTimeOffset = 0;
+        let lastScheduleHtml = "";
+        let lastBtnsHtml = "";
+        const syncStatusEl = document.getElementById('sync-status');
+
+        async function syncTimeWithServer() {
+            const timeAPIs = [
+                'https://worldtimeapi.org/api/timezone/Asia/Makassar',
+                'https://timeapi.io/api/Time/current/zone?timeZone=Asia/Makassar'
+            ];
+
+            let success = false;
+
+            for (let api of timeAPIs) {
+                try {
+                    const response = await fetch(api, { timeout: 5000 });
+                    if (!response.ok) throw new Error("Respons API tidak OK");
+
+                    const data = await response.json();
+                    let serverTime;
+
+                    if (data.datetime) {
+                        serverTime = new Date(data.datetime);
+                    } else if (data.dateTime) {
+                        serverTime = new Date(data.dateTime);
+                    }
+
+                    if (serverTime) {
+                        const localTime = new Date();
+                        serverTimeOffset = serverTime.getTime() - localTime.getTime();
+
+                        syncStatusEl.innerText = "● Terhubung Server";
+                        syncStatusEl.className = "text-[9px] mt-1.5 text-emerald-300 font-bold uppercase tracking-widest";
+                        success = true;
+                        break;
+                    }
+                } catch (error) {
+                    console.warn(`Gagal mengambil waktu dari ${api}:`, error.message);
+                }
+            }
+
+            if (!success) {
+                syncStatusEl.innerText = "● Offline / Lokal";
+                syncStatusEl.className = "text-[9px] mt-1.5 text-rose-300 font-bold uppercase tracking-widest";
+            }
+        }
+
+        function formatDateToYYYYMMDD(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function getIndonesianDay(date) {
+            const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+            return days[date.getDay()];
+        }
+
+        function updateClock() {
+            const now = new Date(new Date().getTime() + serverTimeOffset);
+
+            const timeString = now.toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('live-clock').innerText = timeString;
+
+            const currentDay = getIndonesianDay(now);
+            const currentDateStr = formatDateToYYYYMMDD(now);
+
+            // Format format tanggal untuk ditambahkan di sebelah hari
+            const options = { day: 'numeric', month: 'short', year: 'numeric' };
+            const dateLabel = now.toLocaleDateString('id-ID', options);
+
+            document.getElementById('display-day').innerText = currentDay + ", " + dateLabel;
+
+            checkExamStatus(now, currentDateStr);
+        }
+
+        function checkExamStatus(now, currentDateStr) {
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            const todaySchedule = masterSchedule[currentDateStr] || [];
+
+            let activeExams = [];
+
+            const listBody = document.getElementById('schedule-list');
+            let newContent = '';
+
+            if (todaySchedule.length === 0) {
+                newContent = '<div class="text-center py-8 text-slate-400 text-sm font-medium italic bg-slate-50/50 rounded-2xl border border-slate-100 border-dashed">Tidur nyenyak, tidak ada ujian hari ini ✨</div>';
+            } else {
+                todaySchedule.forEach((item, index) => {
+                    const [hStart, mStart] = item.start.split(':').map(Number);
+                    const [hEnd, mEnd] = item.end.split(':').map(Number);
+                    const startTime = hStart * 60 + mStart;
+                    const endTime = hEnd * 60 + mEnd;
+
+                    let statusBadge = "bg-slate-100 text-slate-500 ring-1 ring-slate-200/50";
+                    let statusText = "Akan Datang";
+                    let cardStyle = "bg-white hover:bg-slate-50 border-slate-100";
+                    let iconBg = "bg-slate-100 text-slate-400";
+
+                    if (currentTime >= startTime && currentTime <= endTime) {
+                        activeExams.push(item);
+                        statusBadge = "bg-green-100 text-green-700 ring-1 ring-green-400/30 font-bold shadow-sm";
+                        statusText = "Sedang Berjalan";
+                        cardStyle = "bg-indigo-50/30 border-indigo-100 shadow-[0_4px_20px_-4px_rgba(99,102,241,0.1)] translate-x-1";
+                        iconBg = "bg-indigo-500 text-white shadow-md shadow-indigo-200";
+                    } else if (currentTime > endTime) {
+                        statusBadge = "bg-slate-50 text-slate-400 border border-slate-100";
+                        statusText = "Selesai";
+                        cardStyle = "bg-slate-50/50 border-slate-100 opacity-75 grayscale-[50%]";
+                        iconBg = "bg-slate-200 text-slate-400";
+                    }
+
+                    newContent += `
+                        <div class="flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 ${cardStyle}" style="animation: fade-in-up ${0.1 * (index + 1)}s ease-out forwards; opacity: 0; transform: translateY(10px);">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${iconBg}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[10px] font-bold text-indigo-500 tracking-wider">${item.start} - ${item.end}</span>
+                                    <span class="text-[9px] px-2.5 py-1 rounded-lg ${statusBadge} uppercase tracking-wide transition-colors">${statusText}</span>
+                                </div>
+                                <h4 class="font-bold text-slate-800 text-[15px] truncate">${item.subject}</h4>
+                                <span class="inline-block mt-0.5 text-[9px] font-semibold text-slate-500 uppercase tracking-widest bg-white px-2 py-0.5 rounded border shadow-sm">${item.category}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (lastScheduleHtml !== newContent) {
+                listBody.innerHTML = newContent;
+                lastScheduleHtml = newContent;
+            }
+
+            // Tambahkan CSS custom untuk animasi list jadwal jika belum ada
+            if (!document.getElementById('custom-animations')) {
+                const style = document.createElement('style');
+                style.id = 'custom-animations';
+                style.innerHTML = `
+                    @keyframes fade-in-up {
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                    .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
+                    .animate-fade-in { animation: fade-in-up 0.5s ease-out forwards; }
+                `;
+                document.head.appendChild(style);
+            }
+
+            const activeInfo = document.getElementById('active-exam-info');
+            const noInfo = document.getElementById('no-exam-info');
+            const buttonsContainer = document.getElementById('exam-buttons-container');
+
+            if (activeExams.length > 0) {
+                activeInfo.classList.remove('hidden');
+                noInfo.classList.add('hidden');
+                document.getElementById('current-time-range').innerText = `Terjadwal sampai pukul ${activeExams[activeExams.length - 1].end} WITA`;
+
+                let btnsHtml = '';
+                activeExams.forEach(exam => {
+                    btnsHtml += `
+                        <a href="${exam.link}" target="_blank" class="exam-card-active group flex items-center justify-between p-6 rounded-[24px] text-white transition-all hover:scale-[1.02] active:scale-[0.98]">
+                            <div class="relative z-10 flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest shadow-sm">${exam.category}</span>
+                                    <span class="text-[10px] bg-indigo-900/40 px-2 py-1 rounded-md font-medium font-mono">${exam.start} - ${exam.end}</span>
+                                </div>
+                                <h3 class="text-2xl font-bold leading-tight drop-shadow-md pr-4">${exam.subject}</h3>
+                                <p class="text-indigo-100 text-xs mt-2 font-medium flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
+                                    Ketuk untuk mulai ujian
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                    </svg>
+                                </p>
+                            </div>
+                            <div class="relative w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-indigo-600 flex-shrink-0 shadow-lg group-hover:rotate-12 transition-transform duration-300 z-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                                    <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                                </svg>
+                            </div>
+                        </a>
+                    `;
+                });
+                if (lastBtnsHtml !== btnsHtml) {
+                    buttonsContainer.innerHTML = btnsHtml;
+                    lastBtnsHtml = btnsHtml;
+                }
+            } else {
+                activeInfo.classList.add('hidden');
+                noInfo.classList.remove('hidden');
+            }
+        }
+
+        // Jalankan sinkronisasi
+        syncTimeWithServer();
+        setInterval(updateClock, 1000);
+        setInterval(syncTimeWithServer, 300000); // Resync setiap 5 menit
+    </script>
+</body>
+
+</html>
